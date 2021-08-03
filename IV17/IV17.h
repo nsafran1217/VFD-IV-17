@@ -1,19 +1,29 @@
+/*
+Library for IV-17 and IV-4 Sixteen segment alphanumeric soviet VFD tube
+Nathan Safran - 8/2/2021
+*/
 
-
-int LATCHPIN = 9;
-
-int CLOCKPIN = 10;
-
-int DATAPIN = 8;
-int blank = 11;
-int num;
-unsigned long timeStart = millis();
-unsigned long lastTime = 0;
-unsigned long j = 0;
-
-unsigned long asciiLookupIV17[128] = {
-
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
+#ifndef IV17_h
+#define IV17_h
+#include "Arduino.h"
+class IV17
+{
+  public:
+    IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin);
+    void shiftOutChar(char c);
+    void shiftOutCharNoLatch(char c);
+    void shiftOutString(String s);
+    void shiftOut20Bits(uint8_t bitOrder, uint32_t val);
+    void scrollString(String s, uint8_t direction, uint8_t numOfTubes);
+  private:
+    int _dataPin;
+    int _clockPin;
+    int _latchPin;
+    int _blankPin;
+    String _scrollingString;
+    uint32_t _gridPin = 0b01000000000000000000;
+    unsigned long _asciiLookupIV17[128] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
 
 0b00100000000000001100,  //!
 0b00000000001000000100,  //"
@@ -75,7 +85,7 @@ unsigned long asciiLookupIV17[128] = {
 0b00001000100010111100,  //Y
 0b00000100010000110011,  //Z
 0b00000010001000010010,  //[
-0b00000001000100000000,  //\
+0b00000001000100000000,  //backslash
 0b00000010001000100001,  //]
 0b00000101000000000000,  //^
 0b00000000000000110000,  //_
@@ -110,80 +120,9 @@ unsigned long asciiLookupIV17[128] = {
 0b00000010001000000000,  //|
 0b00000010101000100001,  //}
 0b00001100110000000000,  //~
-0b00000000000000000000,  //
-0
-
-  
+0b00000000000000000000 //
   };
+    
+};
 
-
-void shiftOutChar(char c){
-    digitalWrite(LATCHPIN, LOW);
-    shiftOut20Bits(DATAPIN, CLOCKPIN, MSBFIRST, asciiLookupIV17[c] | grid); //262144
-    digitalWrite(LATCHPIN, HIGH);
-
-}
-
-
-
-
-void setup()
-{
-    //Start Serial for debuging purposes
-    Serial.begin(9600);
-    //set pins to output because they are addressed in the main loop
-    pinMode(LATCHPIN, OUTPUT);
-
-  pinMode(CLOCKPIN, OUTPUT);
-  pinMode(DATAPIN, OUTPUT);
-    pinMode(blank, OUTPUT);
-    digitalWrite(blank, LOW);
-
-  pinMode(blank, OUTPUT);
-//analogWrite(blank, 100);
-  for (int i=0;i<82;i++){
-  digitalWrite(LATCHPIN, LOW);
-      digitalWrite(DATAPIN, LOW);
-          digitalWrite(CLOCKPIN, HIGH);
-        digitalWrite(CLOCKPIN, LOW); 
-        delay(5);
-        digitalWrite(LATCHPIN, HIGH);
-        Serial.println(i);
-}
-}
-void loop()
-{
-  uint32_t grid = 0b01000000000000000000;
- 
-
-
- for (uint16_t i=32 ; i < 127 ; i++){
-     
-     //shiftOut(DATAPIN, CLOCKPIN, MSBFIRST, startvar); 
-  
-    digitalWrite(LATCHPIN, LOW);
-    shiftOut20Bits(DATAPIN, CLOCKPIN, MSBFIRST, asciiLookupIV17[i] | grid); //262144
-    digitalWrite(LATCHPIN, HIGH);
-    //Serial.println(startvar);
-
-    delay(500);
-}
-
-
-}
-
-
-void shiftOut20Bits(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint32_t val)
-{
-    uint8_t i;
-
-    for (i = 0; i < 20; i++)  {
-        if (bitOrder == LSBFIRST)
-            digitalWrite(dataPin, !!(val & (1ul << i)));   //1ul tells it to use an unisgned long. If we use just 1, its only 16 bits
-        else    
-            digitalWrite(dataPin, !!(val & (1ul << (19 - i))));
-
-        digitalWrite(clockPin, HIGH);
-        digitalWrite(clockPin, LOW);        
-    }
-}
+#endif
