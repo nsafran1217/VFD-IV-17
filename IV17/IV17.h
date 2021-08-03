@@ -20,6 +20,7 @@ class IV17
     int _clockPin;
     int _latchPin;
     int _blankPin;
+    int _numOfTubes;
     String _scrollingString;
     uint32_t _gridPin = 0b01000000000000000000;
     unsigned long _asciiLookupIV17[128] = {

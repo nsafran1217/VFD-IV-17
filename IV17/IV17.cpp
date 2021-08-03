@@ -6,7 +6,7 @@ Nathan Safran - 8/2/2021
 #include "Arduino.h"
 #include "IV17.h"
 
-IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin)
+IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin, uint8_t numOfTubes)
 {
     pinMode(dataPin, OUTPUT);
     pinMode(clockPin, OUTPUT); 
@@ -16,6 +16,7 @@ IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin
     _clockPin = clockPin;
     _latchPin = latchPin;
     _blankPin = blankPin;
+    _numOfTubes = numOfTubes;
 
 }
 void IV17::shiftOutCharNoLatch(char c)
@@ -39,8 +40,14 @@ void IV17::shiftOutString(String s) {
     
     digitalWrite(_latchPin, HIGH);
 }
-void IV17::scrollString(String s, uint8_t direction, uint8_t numOfTubes){
+void IV17::scrollString(String s, uint8_t direction){
     _scrollingString = s;
+    String rotateString = s;
+
+    for (int i = 0; i < s.length(); i++) 
+    {
+        
+    }
  
 
 }
