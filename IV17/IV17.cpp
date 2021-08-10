@@ -17,6 +17,8 @@ IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin
     _latchPin = latchPin;
     _blankPin = blankPin;
     _numOfTubes = numOfTubes;
+    _timeSinceLastScroll = millis();
+    _scrollIndex = 0;
 
 }
 void IV17::shiftOutCharNoLatch(char c)
@@ -27,26 +29,65 @@ void IV17::shiftOutCharNoLatch(char c)
 void IV17::shiftOutChar(char c)
 {
     digitalWrite(_latchPin, LOW);
-    shiftOut20Bits(MSBFIRST, _asciiLookupIV17[c] | _gridPin); 
+    shiftOut20Bits(MSBFIRST, _asciiLookupIV17[c] | _gridPin); //always make sure the grid pin is on
     digitalWrite(_latchPin, HIGH);
 
 }
 void IV17::shiftOutString(String s) {
     digitalWrite(_latchPin, LOW);
-    for (int i = s.length(); i > 0; i--)
+    for (int i = s.length(); i > 0; i--) //need to do reverse order because hardware shifts in from the right.
     {
         shiftOutCharNoLatch(s[i-1]);
-    }
-    
+    }  
     digitalWrite(_latchPin, HIGH);
 }
-void IV17::scrollString(String s, uint8_t direction){
-    _scrollingString = s;
-    String rotateString = s;
 
-    for (int i = 0; i < s.length(); i++) 
+void IV17::scrollString(String s, uint8_t direction){
+    char tubes[_numOfTubes];
+    int delayToScroll = 250;
+    unsigned long currentMillis = millis();
+    if ((currentMillis - _timeSinceLastScroll) > delayToScroll) 
     {
-        
+        digitalWrite(_latchPin, LOW);
+        if (_scrollIndex <= _numOfTubes){
+
+            for (int i = s.length(); i > 0; i--) 
+            {
+                shiftOutCharNoLatch(s[i-1]);
+            }  
+
+            for (int i = 0; i < (_numOfTubes - _scrollIndex); i++)
+            {
+                shiftOutCharNoLatch(' ');
+            }
+            
+
+        } else if (_scrollIndex < s.length() + 8)
+        {
+            if (_scrollIndex > s.length())
+            {
+                for (int i = 0; i < _scrollIndex - s.length(); i++)
+                {
+                    shiftOutCharNoLatch(' ');
+                }
+            }
+            for (int i = (s.length()); i > (0 + (_scrollIndex - _numOfTubes)) ; i--) 
+            {
+                shiftOutCharNoLatch(s[i-1]);
+            }  
+
+            
+        } 
+        _scrollIndex++;
+
+        if (_scrollIndex >= s.length() + _numOfTubes) { //do more math to continue printing spaces
+
+            _scrollIndex = 0;
+        }
+
+
+        digitalWrite(_latchPin, HIGH);
+        _timeSinceLastScroll = millis();
     }
  
 

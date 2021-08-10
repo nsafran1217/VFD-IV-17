@@ -9,19 +9,20 @@ Nathan Safran - 8/2/2021
 class IV17
 {
   public:
-    IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin);
+    IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin, uint8_t numOfTubes);
     void shiftOutChar(char c);
     void shiftOutCharNoLatch(char c);
     void shiftOutString(String s);
     void shiftOut20Bits(uint8_t bitOrder, uint32_t val);
-    void scrollString(String s, uint8_t direction, uint8_t numOfTubes);
+    void scrollString(String s, uint8_t direction);
   private:
     int _dataPin;
     int _clockPin;
     int _latchPin;
     int _blankPin;
     int _numOfTubes;
-    String _scrollingString;
+    int _scrollIndex;     
+    unsigned long _timeSinceLastScroll;
     uint32_t _gridPin = 0b01000000000000000000;
     unsigned long _asciiLookupIV17[128] = {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
