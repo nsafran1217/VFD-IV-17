@@ -53,6 +53,11 @@
             this.asciiTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.radioGroupBox = new System.Windows.Forms.GroupBox();
+            this.binaryRadioButton = new System.Windows.Forms.RadioButton();
+            this.hexRadioButton = new System.Windows.Forms.RadioButton();
+            this.ASMRadioButton = new System.Windows.Forms.RadioButton();
+            this.radioGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // segbut_1
@@ -299,11 +304,56 @@
             this.label2.TabIndex = 24;
             this.label2.Text = "ascii (dec)";
             // 
+            // radioGroupBox
+            // 
+            this.radioGroupBox.Controls.Add(this.ASMRadioButton);
+            this.radioGroupBox.Controls.Add(this.hexRadioButton);
+            this.radioGroupBox.Controls.Add(this.binaryRadioButton);
+            this.radioGroupBox.Location = new System.Drawing.Point(659, 66);
+            this.radioGroupBox.Name = "radioGroupBox";
+            this.radioGroupBox.Size = new System.Drawing.Size(129, 138);
+            this.radioGroupBox.TabIndex = 25;
+            this.radioGroupBox.TabStop = false;
+            this.radioGroupBox.Text = "Output Format";
+            // 
+            // binaryRadioButton
+            // 
+            this.binaryRadioButton.AutoSize = true;
+            this.binaryRadioButton.Checked = true;
+            this.binaryRadioButton.Location = new System.Drawing.Point(7, 20);
+            this.binaryRadioButton.Name = "binaryRadioButton";
+            this.binaryRadioButton.Size = new System.Drawing.Size(54, 17);
+            this.binaryRadioButton.TabIndex = 0;
+            this.binaryRadioButton.TabStop = true;
+            this.binaryRadioButton.Text = "Binary";
+            this.binaryRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // hexRadioButton
+            // 
+            this.hexRadioButton.AutoSize = true;
+            this.hexRadioButton.Location = new System.Drawing.Point(7, 44);
+            this.hexRadioButton.Name = "hexRadioButton";
+            this.hexRadioButton.Size = new System.Drawing.Size(44, 17);
+            this.hexRadioButton.TabIndex = 1;
+            this.hexRadioButton.Text = "Hex";
+            this.hexRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // ASMRadioButton
+            // 
+            this.ASMRadioButton.AutoSize = true;
+            this.ASMRadioButton.Location = new System.Drawing.Point(7, 68);
+            this.ASMRadioButton.Name = "ASMRadioButton";
+            this.ASMRadioButton.Size = new System.Drawing.Size(105, 17);
+            this.ASMRadioButton.TabIndex = 2;
+            this.ASMRadioButton.Text = "ASM Hex (Bytes)";
+            this.ASMRadioButton.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.radioGroupBox);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.asciiTextBox);
@@ -331,6 +381,8 @@
             this.Controls.Add(this.segbut_1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.radioGroupBox.ResumeLayout(false);
+            this.radioGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -363,6 +415,10 @@
         private System.Windows.Forms.TextBox asciiTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.GroupBox radioGroupBox;
+        private System.Windows.Forms.RadioButton ASMRadioButton;
+        private System.Windows.Forms.RadioButton hexRadioButton;
+        private System.Windows.Forms.RadioButton binaryRadioButton;
     }
 }
 

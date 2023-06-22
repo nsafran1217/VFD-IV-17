@@ -24,9 +24,27 @@ namespace vfddesigner
 
         public void updateCode()
         {
-            String binary = (Convert.ToString(code, 2)).PadLeft(20,'0');
+            String asciiText = "blank";
+            if (binaryRadioButton.Checked)
+            {
+                asciiText = "0b" + (Convert.ToString(code, 2)).PadLeft(20, '0') + ",  //";
+            }
+            if (hexRadioButton.Checked)
+            {
+                asciiText = "0x" + (Convert.ToString(code, 16)).PadLeft(6, '0') + ",  //";
+            }
+            if (ASMRadioButton.Checked)
+            {
+                uint codeTemp = code;
+                uint byte0 = codeTemp & 0xff;
+                uint byte1 = ((codeTemp >> 8) | (codeTemp << (32 - 8))) & 0xff;
+                uint byte2 = ((codeTemp >> 16) | (codeTemp << (32 - 16))) & 0xff;
+                asciiText = ".data $" + (Convert.ToString(byte2, 16)).PadLeft(2, '0') + ",$" + (Convert.ToString(byte1, 16)).PadLeft(2, '0') + ",$" + (Convert.ToString(byte0, 16)).PadLeft(2, '0') + "    ;";
+                
+            }
 
-            this.outTextBox.Text = "0b" +(binary) + ",  //" + Convert.ToChar(asciicode).ToString();          
+            this.outTextBox.Text = (asciiText) + Convert.ToChar(asciicode).ToString();
+
             this.charTextBox.Text = Convert.ToChar(asciicode).ToString();
             this.asciiTextBox.Text = Convert.ToString(asciicode);
  
@@ -35,8 +53,26 @@ namespace vfddesigner
         private void nextbtn_Click(object sender, EventArgs e)
         {
             asciicode = Convert.ToInt16(asciiTextBox.Text);
-            String binary = (Convert.ToString(code, 2)).PadLeft(20, '0');
-            this.outLines.AppendText("0b" + (binary) + ",  //" + Convert.ToChar(asciicode).ToString() + "\r\n");
+
+            String asciiText = "blank";
+            if (binaryRadioButton.Checked)
+            {
+                asciiText = "0b" + (Convert.ToString(code, 2)).PadLeft(20, '0') + ",  //";
+            }
+            if (hexRadioButton.Checked)
+            {
+                asciiText = "0x" + (Convert.ToString(code, 16)).PadLeft(6, '0') + ",  //";
+            }
+            if (ASMRadioButton.Checked)
+            {
+                uint codeTemp = code;
+                uint byte0 = codeTemp & 0xff;
+                uint byte1 = ((codeTemp >> 8) | (codeTemp << (32 - 8))) & 0xff;
+                uint byte2 = ((codeTemp >> 16) | (codeTemp << (32 - 16))) & 0xff;
+                asciiText = ".data $" + (Convert.ToString(byte2, 16)).PadLeft(2, '0') + ",$" + (Convert.ToString(byte1, 16)).PadLeft(2, '0') + ",$" + (Convert.ToString(byte0, 16)).PadLeft(2, '0') + "    ;";
+
+            }
+            this.outLines.AppendText((asciiText) + Convert.ToChar(asciicode).ToString() + "\r\n");
             asciicode++; //inc ascii code to next CHAR
             updateCode();
 
