@@ -42,18 +42,30 @@ void IV17::shiftOutString(String s) {
     digitalWrite(_latchPin, HIGH);
 }
 
-void IV17::scrollString(String s, uint8_t direction){
-    char tubes[_numOfTubes];
-    int delayToScroll = 250;
+void IV17::setScrollingString(String s, uint8_t direction, int delay) {
+    _scrollingString = s;
+    _delayToScroll = delay;
+    scrollString();
+}
+
+void IV17::scrollStringSync() { //synchronous scroll display. AKA blocking until entire string scrolls.
+    scrollString();
+    while (_scrollIndex <= (_scrollingString.length() + _numOfTubes) && _scrollIndex != 0)
+    {
+        scrollString();
+    }
+}
+void IV17::scrollString() {  //call in main loop for async scroll.
+
     unsigned long currentMillis = millis();
-    if ((currentMillis - _timeSinceLastScroll) > delayToScroll) 
+    if ((currentMillis - _timeSinceLastScroll) > _delayToScroll) 
     {
         digitalWrite(_latchPin, LOW);
         if (_scrollIndex <= _numOfTubes){
 
-            for (int i = s.length(); i > 0; i--) 
+            for (int i = _scrollingString.length(); i > 0; i--) 
             {
-                shiftOutCharNoLatch(s[i-1]);
+                shiftOutCharNoLatch(_scrollingString[i-1]);
             }  
 
             for (int i = 0; i < (_numOfTubes - _scrollIndex); i++)
@@ -62,29 +74,25 @@ void IV17::scrollString(String s, uint8_t direction){
             }
             
 
-        } else if (_scrollIndex < s.length() + 8)
+        } else if (_scrollIndex < _scrollingString.length() + 8)
         {
-            if (_scrollIndex > s.length())
+            if (_scrollIndex > _scrollingString.length())
             {
-                for (int i = 0; i < _scrollIndex - s.length(); i++)
+                for (int i = 0; i < _scrollIndex - _scrollingString.length(); i++)
                 {
                     shiftOutCharNoLatch(' ');
                 }
             }
-            for (int i = (s.length()); i > (0 + (_scrollIndex - _numOfTubes)) ; i--) 
+            for (int i = (_scrollingString.length()); i > (0 + (_scrollIndex - _numOfTubes)) ; i--) 
             {
-                shiftOutCharNoLatch(s[i-1]);
-            }  
-
-            
+                shiftOutCharNoLatch(_scrollingString[i-1]);
+            }     
         } 
         _scrollIndex++;
 
-        if (_scrollIndex >= s.length() + _numOfTubes) { //do more math to continue printing spaces
-
-            _scrollIndex = 0;
+        if (_scrollIndex >= _scrollingString.length() + _numOfTubes) { 
+            _scrollIndex = 0; //Once we print the the string plus _numOfTubes buffer on each end, reset the index to start the process over.
         }
-
 
         digitalWrite(_latchPin, HIGH);
         _timeSinceLastScroll = millis();

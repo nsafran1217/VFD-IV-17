@@ -14,14 +14,18 @@ class IV17
     void shiftOutCharNoLatch(char c);
     void shiftOutString(String s);
     void shiftOut20Bits(uint8_t bitOrder, uint32_t val);
-    void scrollString(String s, uint8_t direction);
+    void scrollString();
+    void scrollStringSync();
+    void setScrollingString(String s, uint8_t direction, int delay);
   private:
     int _dataPin;
     int _clockPin;
     int _latchPin;
     int _blankPin;
     int _numOfTubes;
-    int _scrollIndex;     
+    int _scrollIndex;
+    int _delayToScroll;   
+    String _scrollingString;  
     unsigned long _timeSinceLastScroll;
     uint32_t _gridPin = 0b01000000000000000000;
     unsigned long _asciiLookupIV17[128] = {
