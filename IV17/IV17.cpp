@@ -1,6 +1,6 @@
 /*
 Library for IV-17 and IV-4 Sixteen segment alphanumeric soviet VFD tube
-Nathan Safran - 8/2/2021
+Nathan Safran - 9/9/2023
 */
 
 #include "Arduino.h"
@@ -9,8 +9,8 @@ Nathan Safran - 8/2/2021
 IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin, uint8_t numOfTubes)
 {
     pinMode(dataPin, OUTPUT);
-    pinMode(clockPin, OUTPUT); 
-    pinMode(latchPin, OUTPUT); 
+    pinMode(clockPin, OUTPUT);
+    pinMode(latchPin, OUTPUT);
     pinMode(blankPin, OUTPUT);
     _dataPin = dataPin;
     _clockPin = clockPin;
@@ -19,98 +19,162 @@ IV17::IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin
     _numOfTubes = numOfTubes;
     _timeSinceLastScroll = millis();
     _scrollIndex = 0;
-
 }
-void IV17::shiftOutCharNoLatch(char c)
-{   
-    shiftOut20Bits(MSBFIRST, _asciiLookupIV17[c] | _gridPin); 
 
+void IV17::shiftOutChar(char c, boolean latch)
+{
+    if (c < 0x80 ){ //check if valid ASCII
+        shiftOut20Bits (MSBFIRST, _asciiLookupIV17[c] | _gridPin) ; // always make sure the grid pin is on
+    }
+    else
+    {
+        shiftOut20Bits(MSBFIRST, _asciiLookupIV17['?'] | _gridPin);
+    }
+    if (latch)
+    {
+        digitalWrite(_latchPin, LOW);
+        digitalWrite(_latchPin, HIGH);
+    }
 }
-void IV17::shiftOutChar(char c)
+
+void IV17::shiftOutCyrillicChar(const char c[], boolean latch)
+{
+    if (((c[0] & 0xE0) == 0xC0) &&  //check if valid UTF-8 chars that we have in the table
+        ((c[1] & 0xC0) == 0x80 &&
+         (c[1] < 0xb0)))
+    {
+        shiftOut20Bits(MSBFIRST, _cyrillicLookupIV17[(c[1] - 0x80)] | _gridPin); // always make sure the grid pin is on
+    }
+    else
+    {
+        shiftOut20Bits(MSBFIRST, _asciiLookupIV17['?'] | _gridPin);
+    }
+    if (latch)
+    {
+        digitalWrite(_latchPin, LOW);
+        digitalWrite(_latchPin, HIGH);
+    }
+}
+void IV17::shiftOutString(String s)
 {
     digitalWrite(_latchPin, LOW);
-    shiftOut20Bits(MSBFIRST, _asciiLookupIV17[c] | _gridPin); //always make sure the grid pin is on
-    digitalWrite(_latchPin, HIGH);
 
-}
-void IV17::shiftOutString(String s) {
-    digitalWrite(_latchPin, LOW);
-    for (int i = s.length(); i > 0; i--) //need to do reverse order because hardware shifts in from the right.
+    char cc[3] = {0, 0, 0};
+    for (int i = s.length() - 1; i >= 0; i--) // need to do reverse order because hardware shifts in from left to right.
     {
-        shiftOutCharNoLatch(s[i-1]);
-    }  
+        if (s[i] > 0x80)
+        { // UTF-8 char
+            cc[0] = s[i - 1];
+            cc[1] = s[i];
+            i--;
+            shiftOutCyrillicChar(cc, false);
+        }
+        else
+        {
+            shiftOutChar(s[i], false);
+        }
+    }
     digitalWrite(_latchPin, HIGH);
 }
 
-void IV17::setScrollingString(String s, uint8_t direction, int delay) {
+void IV17::setScrollingString(String s, int delay)
+{
     _scrollingString = s;
     _delayToScroll = delay;
-    scrollString();
+    _scrollIndex = 0;
+    _spaceIndex = 0;
 }
 
-void IV17::scrollStringSync() { //synchronous scroll display. AKA blocking until entire string scrolls.
+void IV17::scrollStringSync()
+{ // synchronous scroll display. AKA blocking until entire string scrolls.
     scrollString();
-    while (_scrollIndex <= (_scrollingString.length() + _numOfTubes) && _scrollIndex != 0)
+    while (_scrollIndex <= (_scrollingString.length()) && _scrollIndex != 0)
     {
         scrollString();
     }
 }
-void IV17::scrollString() {  //call in main loop for async scroll.
+void IV17::scrollString()
+{ // call in main loop for async scroll.
 
     unsigned long currentMillis = millis();
-    if ((currentMillis - _timeSinceLastScroll) > _delayToScroll) 
+    if ((currentMillis - _timeSinceLastScroll) > _delayToScroll)
     {
         digitalWrite(_latchPin, LOW);
-        if (_scrollIndex <= _numOfTubes){
-
-            for (int i = _scrollingString.length(); i > 0; i--) 
-            {
-                shiftOutCharNoLatch(_scrollingString[i-1]);
-            }  
-
-            for (int i = 0; i < (_numOfTubes - _scrollIndex); i++)
-            {
-                shiftOutCharNoLatch(' ');
-            }
-            
-
-        } else if (_scrollIndex < _scrollingString.length() + 8)
+        int endIndex = _scrollIndex;
+        int startIndex = _scrollIndex;
+        int charCount = 0;
+        String spaces = "";
+        if (_spaceIndex <= _numOfTubes)
         {
-            if (_scrollIndex > _scrollingString.length())
+            for (int i = 0; i < _numOfTubes - _spaceIndex; i++)
             {
-                for (int i = 0; i < _scrollIndex - _scrollingString.length(); i++)
-                {
-                    shiftOutCharNoLatch(' ');
-                }
+                spaces += ' ';
+                charCount++;
             }
-            for (int i = (_scrollingString.length()); i > (0 + (_scrollIndex - _numOfTubes)) ; i--) 
-            {
-                shiftOutCharNoLatch(_scrollingString[i-1]);
-            }     
-        } 
-        _scrollIndex++;
-
-        if (_scrollIndex >= _scrollingString.length() + _numOfTubes) { 
-            _scrollIndex = 0; //Once we print the the string plus _numOfTubes buffer on each end, reset the index to start the process over.
+            _spaceIndex++;
+            _scrollIndex = 0;
         }
 
+        while (charCount < _numOfTubes && endIndex < _scrollingString.length())
+        {
+            if (_scrollingString[endIndex] < 0x80) // ascii
+            {
+                charCount++;
+                endIndex++;
+            }
+            else
+            {
+                if (((_scrollingString[endIndex] & 0xE0) == 0xC0) &&
+                    (endIndex + 1 < _scrollingString.length()) &&
+                    ((_scrollingString[endIndex + 1] & 0xC0) == 0x80 &&
+                     (_scrollingString[endIndex + 1] < 0xb0)))
+                {
+                    charCount++;   // Increment character count
+                    endIndex += 2; // Move to the next character
+                }
+                else
+                {
+                    // Invalid UTF-8 sequence, skip it
+                    endIndex++;
+                }
+            }
+        }
+
+        String substringToDisplay = spaces + _scrollingString.substring(_scrollIndex, endIndex);
+        while (charCount < _numOfTubes)
+        {
+            substringToDisplay += ' '; // Add spaces to fill the remaining characters
+            charCount++;
+        }
+        shiftOutString(substringToDisplay);
+        if (_scrollingString[_scrollIndex] == 0xd0)
+        {
+            _scrollIndex++;
+        }
+        _scrollIndex++;
+
+        // Reset to the beginning of the string when the end is reached
+        if (_scrollIndex >= _scrollingString.length())
+        {
+            _scrollIndex = 0;
+            _spaceIndex = 0;
+        }
         digitalWrite(_latchPin, HIGH);
         _timeSinceLastScroll = millis();
     }
- 
-
 }
 
 void IV17::shiftOut20Bits(uint8_t bitOrder, uint32_t val)
 {
     uint8_t i;
-    for (i = 0; i < 20; i++)  {
+    for (i = 0; i < 20; i++)
+    {
         if (bitOrder == LSBFIRST)
-            digitalWrite(_dataPin, !!(val & (1ul << i)));   //1ul tells it to use an unisgned long. If we use just 1, its only 16 bits
-        else    
+            digitalWrite(_dataPin, !!(val & (1ul << i))); // 1ul tells it to use an unisgned long. If we use just 1, its only 16 bits
+        else
             digitalWrite(_dataPin, !!(val & (1ul << (19 - i))));
 
         digitalWrite(_clockPin, HIGH);
-        digitalWrite(_clockPin, LOW);        
+        digitalWrite(_clockPin, LOW);
     }
 }
