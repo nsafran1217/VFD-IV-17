@@ -7,11 +7,12 @@ int CLOCKPIN = 10;
 int DATAPIN = 8;
 int blank = 11;
 int num;
+int grid = 1;
 unsigned long timeStart = millis();
 unsigned long lastTime = 0;
 unsigned long j = 0;
 
-unsigned long asciiLookupIV17[128] = {
+const uint32_t asciiLookupIV17[128] = {
 
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
 

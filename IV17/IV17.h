@@ -18,17 +18,17 @@ class IV17
     void scrollStringSync();
     void setScrollingString(String s, uint8_t direction, int delay);
   private:
-    int _dataPin;
-    int _clockPin;
-    int _latchPin;
-    int _blankPin;
-    int _numOfTubes;
-    int _scrollIndex;
+    uint8_t _dataPin;
+    uint8_t _clockPin;
+    uint8_t _latchPin;
+    uint8_t _blankPin;
+    uint8_t _numOfTubes;
+    uint8_t _scrollIndex;
     int _delayToScroll;   
     String _scrollingString;  
-    unsigned long _timeSinceLastScroll;
+    uint32_t _timeSinceLastScroll;
     uint32_t _gridPin = 0b01000000000000000000;
-    unsigned long _asciiLookupIV17[128] = {
+    const uint32_t _asciiLookupIV17[128] = {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 
 
 0b00100000000000001100,  //!
