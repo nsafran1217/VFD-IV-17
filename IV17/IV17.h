@@ -130,7 +130,7 @@ private:
       0b00001100110000000000, //~
       0b00000000000000000000  // 
   };
-  uint32_t _cyrillicLookupIV17[32 + 16] = {
+  const uint32_t _cyrillicLookupIV17[32 + 16] = {
       0,
       0b00001000000011110011, // E with two dots, YO
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
