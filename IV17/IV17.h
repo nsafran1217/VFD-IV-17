@@ -8,17 +8,7 @@ Nathan Safran - 9/9/2023
 #include "Arduino.h"
 class IV17
 {
-public:
-  IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin, uint8_t numOfTubes);
-  void shiftOutChar(char c, boolean latch);
-  void shiftOutString(String s);
-  void shiftOutCyrillicChar(const char c[], boolean latch);
-  void shiftOut20Bits(uint8_t bitOrder, uint32_t val);
-  void scrollString();
-  void scrollStringSync();
-  void setScrollingString(String s, int delay);
-
-private:
+  private:
   uint8_t _dataPin;
   uint8_t _clockPin;
   uint8_t _latchPin;
@@ -29,6 +19,15 @@ private:
   int _delayToScroll;
   String _scrollingString;
   uint32_t _timeSinceLastScroll;
+public:
+  IV17(uint8_t dataPin, uint8_t clockPin, uint8_t latchPin, uint8_t blankPin, uint8_t numOfTubes);
+  void shiftOutChar(char c, boolean latch);
+  void shiftOutString(String s);
+  void shiftOutCyrillicChar(const char c[], boolean latch);
+  void shiftOut20Bits(uint8_t bitOrder, uint32_t val);
+  void scrollString();
+  void scrollStringSync();
+  void setScrollingString(String s, int delay);
   uint32_t _gridPin = 0b01000000000000000000;
   const uint32_t _asciiLookupIV17[128] = {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
